@@ -25,7 +25,7 @@ jobs:
       - run: node --test tests/*.test.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm test
-      - run: npm run build
+      - run: node scripts/build-pages.mjs
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}

@@ -25,11 +25,12 @@ npm run dev -- --port 4173 --strictPort
 
 ```bash
 npm run build
+node scripts/build-pages.mjs
 npm test
 node --test tests/*.test.mjs
 ```
 
-Os testes usam Chromium em `/usr/bin/chromium` no ambiente de nuvem. Em outra máquina, instale Chromium e informe o caminho em `PLAYWRIGHT_CHROMIUM_EXECUTABLE`. Os testes sobem seus próprios servidores nas portas 5173, 5174 e 5175; deixe essas portas livres. Os testes de nuvem usam respostas simuladas e **não** validam o projeto Supabase real nem suas políticas no servidor.
+Os testes usam Chromium em `/usr/bin/chromium` no ambiente de nuvem. Em outra máquina, instale Chromium e informe o caminho em `PLAYWRIGHT_CHROMIUM_EXECUTABLE`. Os testes sobem seus próprios servidores nas portas 5173, 5174 e 5175; deixe essas portas livres. A suíte `npm test` usa respostas simuladas para os cenários de nuvem e **não** valida o projeto Supabase real nem suas políticas no servidor.
 
 Para validar também as configurações de publicação, execute `node --test tests/*.test.mjs`. As verificações recusam URLs inválidas, configuração parcial e chaves privadas, e confirmam que um build com chave privada falha antes da publicação. Os testes de interface verificam a tela de configurações em 320, 390 e 1440 pixels, ampliação de 200%, teclado, exportação de backup e acessibilidade com axe-core (regras WCAG A/AA). A análise automática cobre a tela de configurações e a confirmação de exclusão; não substitui uma avaliação completa do aplicativo com leitores de tela.
 
@@ -55,12 +56,16 @@ npm run preview -- --port 4175 --strictPort
 
 GitHub Pages hospeda o aplicativo. **Ele não armazena os dados pessoais da conta nem sincroniza dispositivos.** Para isso, complete a seção abaixo.
 
+O build de Pages usa [`config/pages.json`](config/pages.json), que contém a URL do projeto e somente sua chave **Publishable**. Essa chave é pública e incorporada ao JavaScript entregue ao navegador; a proteção dos registros depende do login e das políticas RLS no Supabase. Nenhum token administrativo, chave secret ou service_role deve entrar nesse arquivo. O script `scripts/build-pages.mjs` valida a configuração antes do build e rejeita chaves privadas.
+
+As variáveis de GitHub Actions podem substituir essa configuração, desde que as duas estejam preenchidas. Uma substituição parcial falha, evitando combinar o endereço de um projeto com a chave de outro. A configuração no arquivo permite publicar a conexão mesmo quando a integração não tem permissão para editar as variáveis de Actions. `npm run build` continua respeitando apenas a configuração do ambiente local; `node scripts/build-pages.mjs` gera o pacote conectado usado pelo workflow.
+
 ## Ativar login e sincronização entre dispositivos
 
 1. Crie um projeto Supabase em sua conta.
 2. Execute o conteúdo de [`supabase/schema.sql`](supabase/schema.sql) no SQL Editor do projeto. O script cria uma tabela por usuário, regras de acesso por conta (RLS) e controle de versão para evitar sobrescritas silenciosas entre dispositivos.
 3. Em **Authentication**, habilite acesso por e-mail/senha. Em **URL Configuration**, configure tanto **Site URL** quanto **Redirect URLs** com `https://ocriador-homemdevalor.github.io/viachat/`, sem parâmetros como `?v=...`. Para desenvolvimento, permita também o endereço do servidor local usado por você.
-4. No GitHub, abra **Settings → Secrets and variables → Actions → Variables** e crie:
+4. Configure a URL e a chave **Publishable** em `config/pages.json`. Para substituir essa configuração sem alterar o arquivo, no GitHub abra **Settings → Secrets and variables → Actions → Variables** e preencha ambas:
    - `VITE_SUPABASE_URL`: URL pública do seu projeto.
    - `VITE_SUPABASE_PUBLISHABLE_KEY`: chave **publishable** (ou a chave legada **anon**).
 5. Execute novamente o workflow de publicação. Essas configurações são incorporadas no build; alterá-las não modifica um site já publicado até gerar outro build.
@@ -71,7 +76,9 @@ Para desenvolvimento, copie `.env.example` para `.env.local` e preencha as duas 
 
 Sem nenhuma das duas variáveis, o app mostra **Modo local**. Com apenas uma delas ou um valor inválido, o app avisa **Sincronização indisponível** e conserva os registros locais; o build de produção interrompe a publicação até corrigir a configuração. Com configuração válida, o formulário de acesso aparece, mas só uma conexão com o projeto real confirma que a chave, a autenticação e a tabela funcionam.
 
-Para permitir configuração assistida pelo Codex, crie sua conta Supabase e insira um token pessoal em `SUPABASE_ACCESS_TOKEN` nas configurações seguras do ambiente. Esse token é destinado exclusivamente a `api.supabase.com` e não deve ser incluído em arquivos, variáveis `VITE_*` ou no frontend. O acesso administrativo ao Supabase permite preparar o projeto; o acesso às variáveis do GitHub Actions exige também permissão específica no repositório. Se a integração retornar HTTP 403, o administrador deve conceder essa permissão ou cadastrar as duas variáveis públicas pela interface do GitHub. Publicar o ambiente Codex não cadastra as variáveis de GitHub Actions.
+Para permitir configuração assistida pelo Codex, insira um token pessoal em `SUPABASE_ACCESS_TOKEN` nas configurações seguras do ambiente. Esse token é destinado exclusivamente a `api.supabase.com` e não deve ser incluído em arquivos, variáveis `VITE_*` ou no frontend. O acesso administrativo ao Supabase permite preparar o projeto. Publicar o ambiente Codex e publicar o aplicativo são operações distintas.
+
+O projeto `ssvlxoklqqiwzfixgyvi` foi configurado com a tabela, as três políticas de acesso e o retorno da autenticação ao site do Viachat. A confirmação de e-mail permanece habilitada. Para usar o site, abra **Conta e configurações → Criar conta**, confirme o e-mail e entre. Foram validados no serviço real: login e logout, gravação de atividade/finança/meta, recuperação em sessão independente, persistência após recarregar e bloqueio de leitura/inserção/alteração entre contas. As duas contas temporárias confirmadas e seus registros foram removidos ao final. Esses testes não enviaram mensagens; a entrega do e-mail de confirmação precisa ser verificada no cadastro da sua conta.
 
 Se a rede do ambiente estiver restrita, permita o domínio específico do projeto, por exemplo `seu-projeto.supabase.co`, além dos registros de pacotes já permitidos.
 
