@@ -43,10 +43,6 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - name: Publicar o aplicativo compilado pelo GitHub Actions
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api --method PUT "repos/${{ github.repository }}/pages" -f build_type=workflow --silent
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
