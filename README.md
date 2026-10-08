@@ -26,6 +26,7 @@ npm run dev -- --port 4173 --strictPort
 ```bash
 npm run build
 npm test
+node --test tests/deployment.test.mjs
 ```
 
 Os testes usam Chromium em `/usr/bin/chromium` no ambiente de nuvem. Em outra máquina, instale Chromium e informe o caminho em `PLAYWRIGHT_CHROMIUM_EXECUTABLE`. Os testes sobem seus próprios servidores nas portas 5173 e 5174; deixe essas portas livres. Os testes de nuvem usam respostas simuladas e **não** validam o projeto Supabase real nem suas políticas no servidor.
@@ -35,6 +36,8 @@ Sem configuração Supabase, os dados ficam apenas no armazenamento deste navega
 ## Publicar no GitHub Pages
 
 O workflow `.github/workflows/pages.yml` gera o site e o publica em cada push para `main` ou execução manual.
+
+O workflow também verifica o site após a publicação: o HTML deve carregar o JavaScript compilado em `/viachat/assets/`, com os arquivos acessíveis e o tipo correto. Essa verificação detecta a tela em branco causada pela publicação dos arquivos de desenvolvimento. Mantenha **Source → GitHub Actions**; publicar diretamente a raiz de `main` serve o `index.html` de desenvolvimento, que precisa passar pelo build antes de funcionar no navegador.
 
 1. Envie estes arquivos para a branch `main` do repositório `Ocriador-homemdevalor/viachat`.
 2. No GitHub, abra **Settings → Pages → Build and deployment → Source** e selecione **GitHub Actions**. A disponibilidade de Pages depende da visibilidade do repositório e do plano da conta.
