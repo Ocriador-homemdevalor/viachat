@@ -22,7 +22,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: node --test tests/deployment.test.mjs
+      - run: node --test tests/*.test.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm test
       - run: npm run build

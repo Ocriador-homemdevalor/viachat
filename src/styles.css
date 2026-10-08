@@ -16,6 +16,7 @@
   --border: #e7ece9;
   --heading: 'Manrope Variable', sans-serif;
 }
+
 * {
   box-sizing: border-box;
 }
@@ -1755,9 +1756,9 @@ td:first-child:has(.check-button) {
   line-height: 1.8;
 }
 .confirmation-detail {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.9;
-  color: #879978;
+  color: #43564b;
 }
 .toast {
   position: fixed;
@@ -2561,4 +2562,128 @@ td:first-child:has(.check-button) {
 }
 .table-scroll {
   position: relative;
+}
+
+/* Settings need readable guidance at every viewport size. */
+.settings-page .page-heading p,
+.settings-page .today-label,
+.settings-page .example-banner,
+.settings-page .main-footer {
+  color: #43564b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.settings-page .example-banner strong {
+  color: inherit;
+}
+.settings-page .example-banner > button {
+  font-size: 14px;
+  min-height: 44px;
+  color: #104e3d;
+}
+.settings-page .error-banner,
+.settings-page .error-banner > .text-button,
+.settings-page .error-banner > .icon-button {
+  font-size: 14px;
+  color: #963e28;
+}
+.settings-page .error-banner button {
+  min-height: 44px;
+}
+.settings-page button:focus-visible {
+  outline: 3px solid #176b53;
+  outline-offset: 3px;
+}
+.settings-panel .panel-heading h2 {
+  font-size: 18px;
+  line-height: 1.5;
+}
+.settings-panel .panel-heading p,
+.settings-panel .cloud-pending p,
+.settings-panel .account-connected p,
+.settings-panel .privacy-note p,
+.settings-panel > .form-note,
+.settings-panel .auth-message {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #43564b;
+  overflow-wrap: anywhere;
+}
+.settings-panel .cloud-pending h3,
+.settings-panel .account-connected h3 {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.settings-panel .cloud-pending > div,
+.settings-panel .account-connected > div {
+  min-width: 0;
+}
+.settings-panel .account-connected > div {
+  flex: 1;
+}
+.settings-panel .setup-icon,
+.settings-panel .privacy-note {
+  color: #43564b;
+}
+.settings-panel .badge {
+  font-size: 13px;
+  color: #43564b;
+  white-space: normal;
+  line-height: 1.5;
+}
+.settings-panel .button,
+.settings-panel .text-button,
+.settings-panel .segmented button {
+  min-height: 44px;
+  font-size: 14px;
+  white-space: normal;
+  line-height: 1.5;
+}
+.settings-panel .segmented button {
+  color: #43564b;
+}
+.settings-panel .segmented button.selected {
+  color: #104e3d;
+}
+.settings-panel .field > span {
+  font-size: 14px;
+  color: #43564b;
+}
+.settings-panel .field > input {
+  min-height: 48px;
+  font-size: 16px;
+  color: #243b34;
+  border-color: #7e9286;
+}
+.settings-panel .field input::placeholder {
+  font-size: 16px;
+  color: #5c6d62;
+}
+.settings-panel .danger-button,
+.settings-panel .auth-message.error {
+  color: #963e28;
+}
+.settings-panel .configuration-error {
+  background: #fff8f4;
+  border-color: #d9a18f;
+}
+.settings-panel .configuration-error h3 {
+  color: #963e28;
+}
+.settings-panel button:focus-visible,
+.settings-panel input:focus-visible {
+  outline: 3px solid #176b53;
+  outline-offset: 3px;
+}
+.settings-panel .account-tabs {
+  margin-top: 18px;
+}
+@media (max-width: 480px) {
+  .settings-panel .cloud-pending {
+    flex-direction: column;
+  }
+  .settings-panel .danger-button {
+    margin-left: 19px;
+    max-width: calc(100% - 38px);
+  }
 }

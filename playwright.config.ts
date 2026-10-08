@@ -19,8 +19,21 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
-    { name: 'local', testMatch: /app\.spec\.ts/, use: { baseURL: 'http://127.0.0.1:5173' } },
-    { name: 'cloud', testMatch: /cloud\.spec\.ts/, use: { baseURL: 'http://127.0.0.1:5174' } },
+    {
+      name: 'local',
+      testMatch: /(?:^|\/)(?:app|settings)\.spec\.ts/,
+      use: { baseURL: 'http://127.0.0.1:5173' },
+    },
+    {
+      name: 'cloud',
+      testMatch: /cloud(?:-settings)?\.spec\.ts/,
+      use: { baseURL: 'http://127.0.0.1:5174' },
+    },
+    {
+      name: 'invalid',
+      testMatch: /invalid-config\.spec\.ts/,
+      use: { baseURL: 'http://127.0.0.1:5175' },
+    },
   ],
   webServer: [
     {
@@ -35,7 +48,17 @@ export default defineConfig({
       reuseExistingServer: false,
       env: {
         VITE_SUPABASE_URL: 'https://test.supabase.co',
-        VITE_SUPABASE_PUBLISHABLE_KEY: 'test-public-key',
+        VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test_public_key',
+        VITE_BASE_PATH: '/',
+      },
+    },
+    {
+      command: 'npm run dev -- --port 5175 --strictPort',
+      url: 'http://127.0.0.1:5175',
+      reuseExistingServer: false,
+      env: {
+        VITE_SUPABASE_URL: 'https://test.supabase.co',
+        VITE_SUPABASE_PUBLISHABLE_KEY: '',
         VITE_BASE_PATH: '/',
       },
     },

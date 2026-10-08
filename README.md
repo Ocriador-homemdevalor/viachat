@@ -26,10 +26,12 @@ npm run dev -- --port 4173 --strictPort
 ```bash
 npm run build
 npm test
-node --test tests/deployment.test.mjs
+node --test tests/*.test.mjs
 ```
 
-Os testes usam Chromium em `/usr/bin/chromium` no ambiente de nuvem. Em outra máquina, instale Chromium e informe o caminho em `PLAYWRIGHT_CHROMIUM_EXECUTABLE`. Os testes sobem seus próprios servidores nas portas 5173 e 5174; deixe essas portas livres. Os testes de nuvem usam respostas simuladas e **não** validam o projeto Supabase real nem suas políticas no servidor.
+Os testes usam Chromium em `/usr/bin/chromium` no ambiente de nuvem. Em outra máquina, instale Chromium e informe o caminho em `PLAYWRIGHT_CHROMIUM_EXECUTABLE`. Os testes sobem seus próprios servidores nas portas 5173, 5174 e 5175; deixe essas portas livres. Os testes de nuvem usam respostas simuladas e **não** validam o projeto Supabase real nem suas políticas no servidor.
+
+Para validar também as configurações de publicação, execute `node --test tests/*.test.mjs`. As verificações recusam URLs inválidas, configuração parcial e chaves privadas, e confirmam que um build com chave privada falha antes da publicação. Os testes de interface verificam a tela de configurações em 320, 390 e 1440 pixels, ampliação de 200%, teclado, exportação de backup e acessibilidade com axe-core (regras WCAG A/AA). A análise automática cobre a tela de configurações e a confirmação de exclusão; não substitui uma avaliação completa do aplicativo com leitores de tela.
 
 Sem configuração Supabase, os dados ficam apenas no armazenamento deste navegador. Limpar os dados do site, usar modo anônimo ou trocar de navegador/dispositivo não mantém esses dados. Exporte um backup regularmente. A aplicação não é um gerenciador financeiro conectado a bancos: os valores são informados por você.
 
@@ -57,7 +59,7 @@ GitHub Pages hospeda o aplicativo. **Ele não armazena os dados pessoais da cont
 
 1. Crie um projeto Supabase em sua conta.
 2. Execute o conteúdo de [`supabase/schema.sql`](supabase/schema.sql) no SQL Editor do projeto. O script cria uma tabela por usuário, regras de acesso por conta (RLS) e controle de versão para evitar sobrescritas silenciosas entre dispositivos.
-3. Em **Authentication**, habilite acesso por e-mail/senha. Configure a URL do site e os redirect URLs para o endereço publicado, incluindo o caminho `/viachat/`. Para desenvolvimento, permita também o endereço do servidor local usado por você.
+3. Em **Authentication**, habilite acesso por e-mail/senha. Em **URL Configuration**, configure tanto **Site URL** quanto **Redirect URLs** com `https://ocriador-homemdevalor.github.io/viachat/`, sem parâmetros como `?v=...`. Para desenvolvimento, permita também o endereço do servidor local usado por você.
 4. No GitHub, abra **Settings → Secrets and variables → Actions → Variables** e crie:
    - `VITE_SUPABASE_URL`: URL pública do seu projeto.
    - `VITE_SUPABASE_PUBLISHABLE_KEY`: chave **publishable** (ou a chave legada **anon**).
@@ -66,6 +68,10 @@ GitHub Pages hospeda o aplicativo. **Ele não armazena os dados pessoais da cont
 7. Valide com uma conta real: crie uma atividade no primeiro dispositivo, espere **Salvo na nuvem**, entre no segundo dispositivo e confirme a atividade. Valide também que outra conta não consegue ler os dados da primeira. Se os dispositivos estiverem abertos ao mesmo tempo, use **Carregar dados da nuvem** no segundo para obter a versão atual.
 
 Para desenvolvimento, copie `.env.example` para `.env.local` e preencha as duas configurações públicas, ou injete as variáveis no processo. Nunca use chaves **service_role**, chaves secretas ou senhas nas variáveis `VITE_*`: o conteúdo do frontend é público. Senhas de usuários são enviadas apenas ao serviço de autenticação; não são incluídas no backup.
+
+Sem nenhuma das duas variáveis, o app mostra **Modo local**. Com apenas uma delas ou um valor inválido, o app avisa **Sincronização indisponível** e conserva os registros locais; o build de produção interrompe a publicação até corrigir a configuração. Com configuração válida, o formulário de acesso aparece, mas só uma conexão com o projeto real confirma que a chave, a autenticação e a tabela funcionam.
+
+Para permitir configuração assistida pelo Codex, crie sua conta Supabase e insira um token pessoal em `SUPABASE_ACCESS_TOKEN` nas configurações seguras do ambiente. Esse token é destinado exclusivamente a `api.supabase.com` e não deve ser incluído em arquivos, variáveis `VITE_*` ou no frontend. O acesso administrativo ao Supabase permite preparar o projeto; o acesso às variáveis do GitHub Actions exige também permissão específica no repositório. Se a integração retornar HTTP 403, o administrador deve conceder essa permissão ou cadastrar as duas variáveis públicas pela interface do GitHub. Publicar o ambiente Codex não cadastra as variáveis de GitHub Actions.
 
 Se a rede do ambiente estiver restrita, permita o domínio específico do projeto, por exemplo `seu-projeto.supabase.co`, além dos registros de pacotes já permitidos.
 

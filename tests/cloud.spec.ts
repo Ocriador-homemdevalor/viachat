@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
 import { emptyWorkspace, type Workspace } from '../src/model'
 
 const ALICE = '11111111-1111-4111-8111-111111111111'
@@ -113,6 +114,18 @@ test('nuvem: carrega a conta, serializa edições e mantém as contas separadas'
   const mock = await mockCloud(page)
   await page.goto('/')
   await login(page)
+  await page.setViewportSize({ width: 320, height: 900 })
+  await expect(page.getByRole('heading', { name: 'Você está conectado' })).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320)
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .include('.settings-panel')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .analyze()
+    ).violations,
+  ).toEqual([])
+  await page.setViewportSize({ width: 1440, height: 900 })
   await routine(page)
   await expect(page.getByLabel('Atividade 1', { exact: true })).toHaveValue('Plano de Alice')
   mock.state.delay = 600

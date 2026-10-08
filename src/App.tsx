@@ -2,6 +2,7 @@ import {
   cloneElement,
   isValidElement,
   useEffect,
+  useId,
   useRef,
   useState,
   type FormEvent,
@@ -35,7 +36,7 @@ import {
   Pencil,
   AlertCircle,
 } from 'lucide-react'
-import { cloud } from './cloud'
+import { cloud, cloudConfiguration } from './cloud'
 import {
   emptyWorkspace,
   goalValue,
@@ -86,6 +87,7 @@ function Dialog({
   busy?: boolean
 }) {
   const ref = useRef<HTMLDialogElement>(null)
+  const titleId = useId()
   useEffect(() => {
     const dialog = ref.current!
     dialog.showModal()
@@ -95,13 +97,14 @@ function Dialog({
     <dialog
       ref={ref}
       className="dialog"
+      aria-labelledby={titleId}
       onCancel={onClose}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
       <div className="dialog-heading">
-        <h2>{title}</h2>
+        <h2 id={titleId}>{title}</h2>
         <button type="button" className="icon-button" aria-label="Fechar" onClick={onClose}>
           <X size={20} />
         </button>
@@ -1498,7 +1501,9 @@ function Account({ email, onReload }: { email?: string; onReload: () => void }) 
           ? await cloud.auth.signInWithPassword(credentials)
           : await cloud.auth.signUp({
               ...credentials,
-              options: { emailRedirectTo: window.location.href.split('#')[0] },
+              options: {
+                emailRedirectTo: new URL(import.meta.env.BASE_URL, window.location.origin).href,
+              },
             })
       if (error) {
         setFailed(true)
@@ -1533,17 +1538,29 @@ function Account({ email, onReload }: { email?: string; onReload: () => void }) 
         </div>
       </div>
       {!cloud ? (
-        <div className="cloud-pending">
+        <div
+          className={`cloud-pending ${cloudConfiguration.status === 'invalid' ? 'configuration-error' : ''}`}
+          role={cloudConfiguration.status === 'invalid' ? 'alert' : 'status'}
+        >
           <span className="setup-icon">
             <Cloud size={29} />
           </span>
           <div>
-            <h3>A nuvem ainda precisa ser conectada</h3>
+            <h3>
+              {cloudConfiguration.status === 'invalid'
+                ? 'A conexão com a nuvem precisa de correção'
+                : 'A nuvem ainda precisa ser conectada'}
+            </h3>
+            {cloudConfiguration.status === 'invalid' && <p>{cloudConfiguration.message}</p>}
             <p>
-              Por enquanto, os dados ficam neste navegador. A sincronização será ativada quando o
-              serviço de armazenamento estiver configurado.
+              Seus dados estão salvos somente neste navegador. Eles ainda não aparecem em outro
+              celular ou computador. Exporte um backup para guardar uma cópia.
             </p>
-            <span className="badge neutral">Modo local</span>
+            <span className="badge neutral">
+              {cloudConfiguration.status === 'invalid'
+                ? 'Sincronização indisponível'
+                : 'Modo local'}
+            </span>
           </div>
         </div>
       ) : email ? (
@@ -1554,6 +1571,10 @@ function Account({ email, onReload }: { email?: string; onReload: () => void }) 
           <div>
             <h3>Você está conectado</h3>
             <p>{email}</p>
+            <p>
+              As alterações são enviadas para sua conta. Confira “Salvo na nuvem” antes de trocar de
+              dispositivo.
+            </p>
           </div>
           <button
             className="button secondary"
@@ -1583,9 +1604,14 @@ function Account({ email, onReload }: { email?: string; onReload: () => void }) 
         </div>
       ) : (
         <>
+          <p className="form-note">
+            Entre ou crie uma conta para ativar a sincronização. Até entrar, os dados permanecem
+            neste navegador.
+          </p>
           <div className="segmented account-tabs">
             <button
               className={mode === 'login' ? 'selected' : ''}
+              aria-pressed={mode === 'login'}
               onClick={() => {
                 setMode('login')
                 setMessage('')
@@ -1595,6 +1621,7 @@ function Account({ email, onReload }: { email?: string; onReload: () => void }) 
             </button>
             <button
               className={mode === 'signup' ? 'selected' : ''}
+              aria-pressed={mode === 'signup'}
               onClick={() => {
                 setMode('signup')
                 setMessage('')
@@ -1924,7 +1951,7 @@ export default function App() {
             </button>
           </div>
         </header>
-        <main>
+        <main className={page === 'settings' ? 'settings-page' : undefined}>
           <div className="page-heading">
             <div>
               <div className="today-label">
